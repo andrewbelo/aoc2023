@@ -1,0 +1,10 @@
+{:paths ["src" "resources" "dev"]
+ :aliases
+ {:repl/conjure
+  {:extra-deps {nrepl/nrepl                     {:mvn/version "1.0.0"}
+                cider/cider-nrepl               {:mvn/version "0.42.1"}}
+   :main-opts  ["--main" "nrepl.cmdline"
+                "--middleware" "[cider.nrepl/cider-middleware]"
+                "--interactive"]}
+  :repl/dev {:main-opts ["-e" "(require, 'dev)" "-e" "(in-ns, 'dev)" "-r"]}}
+ :deps {org.clojure/clojure             {:mvn/version "1.10.1"}}}
