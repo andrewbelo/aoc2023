@@ -27,19 +27,16 @@
 
 
 ;; Part 2
-
-
-(defn replace-first-worded-digit
+(defn first-digit-value
   [words-map line]
   (let [words (keys words-map)
         digits "123456789"
         words-re (re-pattern (str/join #"|" (into words digits)))
         found (re-find (re-matcher words-re line))]
-    (if (or (nil? found) (nil? (words-map found))) line
-        (str/replace-first line found (words-map found)))))
+    (str (words-map found found))))
 
 
-(defn replace-corner-worded-digits
+(defn find-edge-digits
   [line]
   (let [worded-digits
         ["one" "two" "three" "four" "five" "six" "seven" "eight" "nine"]
@@ -47,24 +44,14 @@
         form-meaning #(into {} (map vector % (range 1 10)))
         worded-digits-meaning (form-meaning worded-digits)
         reverse-worded-digits-meaning (form-meaning revered-worded-digits)
-        replace-fn (partial replace-first-worded-digit worded-digits-meaning)
-        replace-reverse-fn (partial replace-first-worded-digit
-                                    reverse-worded-digits-meaning)]
-    (->> line
-         (replace-fn)
-         (str/reverse)
-         (replace-reverse-fn)
-         (str/reverse))))
-
-
-(defn replace-all-corner-worded-digits
-  [text]
-  (map replace-corner-worded-digits (str/split text #"\n")))
+        find-left-fn (partial first-digit-value worded-digits-meaning)
+        find-right-fn (partial first-digit-value reverse-worded-digits-meaning)]
+    (read-string (str (find-left-fn line) (find-right-fn (str/reverse line))))))
 
 
 (defn get-calibration-values-with-worded
   [text]
-  (map form-calibration-value (replace-all-corner-worded-digits text)))
+  (map find-edge-digits (str/split text #"\n")))
 
 
 (def calibrate-values (get-calibration-values-with-worded (slurp test-data)))
@@ -87,7 +74,7 @@ xtwone3four
 4nineeightseven2
 zoneight234
 7pqrstsixteen")
-  (def line "ktvlhmq3xzmcztbplxlqzpqmoneightffd " )
+  (def line "ktvlhmq3xzmcztbplxlqzpqmoneightffd" )
   (def worded-digits
         ["one" "two" "three" "four" "five" "six" "seven" "eight" "nine"])
 
@@ -98,9 +85,8 @@ zoneight234
   (int \1)
   (str/split example #"\n")
   (str/replace-first "hellone413531one" "one" "1")
-  (map form-calibration-value (replace-all-corner-worded-digits example-2))
   (apply + (get-calibration-values-with-worded example-2))
-  (replace-corner-worded-digits line)
+  (find-edge-digits line)
 
   (apply + calibrate-values)
 
