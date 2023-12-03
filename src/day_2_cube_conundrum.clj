@@ -94,13 +94,4 @@ Game 5: 6 red, 1 blue, 3 green; 2 blue, 1 red, 2 green")
   ( (map possible-game? (parse-games example)))
   (result example)
   (result2 example)
-
-
-  ;; Testings part 2
-  (def example-2
-    "
-
-    ")
-
-
   )
