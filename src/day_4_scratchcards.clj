@@ -5,11 +5,16 @@
 
 
 ;; Parsing ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defn splitter
+  [sep]
+  (fn [text] (str/split text sep)))
+
+
 (defn parse-number-sets
   [line]
   (->> line
        (map str/trim)
-       (map #(str/split % #" +"))
+       (map (splitter #" +"))
        (map #(map read-string %))
        (map #(apply hash-set %))))
 
@@ -31,24 +36,22 @@
 
 
 ;; Part 1 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defn calc-matches
+(defn matches
   [[wining card]]
   (count (cset/intersection card wining)))
 
 
-(defn calc-score
+(defn score
   [[wining card]]
-  (let [matched (calc-matches [wining card])]
-    (case matched
-      0 0
-      (apply * (repeat (dec matched) 2)))))
+  (let [matched (matches [wining card])]
+    (if (= 0 matched) 0 (Math/exp 2 matched))))
 
 
 (defn result
   [text]
   (->> text
        (cards)
-       (map calc-score)
+       (map score)
        (apply +)))
 
 
@@ -61,7 +64,7 @@
   ([[times-earned cards] current-card]
    (let [cards-earned  (cards current-card)
          already-have  (times-earned current-card)
-         new-cards     (map #(+ 1 current-card %) (range cards-earned))
+         new-cards     (for [card (range cards-earned)] (+ 1 current-card card))
          safe-inc      #(if (nil? %) nil (+ already-have %))
          new-times     (reduce #(update %1 %2 safe-inc) times-earned new-cards)]
      [new-times cards]))
@@ -76,7 +79,7 @@
   [text]
   (->> text
        (cards)
-       (map calc-matches)
+       (map matches)
        (apply vector)
        (multiply-cards)
        (apply +)))
@@ -86,7 +89,7 @@
 
 
 (comment
-  ;; Testing part 1
+  ;; Testing
   (def example
     "Card 1: 41 48 83 86 17 | 83 86  6 31 17  9 48 53
 Card 2: 13 32 20 16 61 | 61 30 68 82 17 32 24 19
@@ -95,7 +98,7 @@ Card 4: 41 92 73 84 69 | 59 84 76 51 58  5 54 83
 Card 5: 87 83 26 28 32 | 88 30 70 12 93 22 82 36
 Card 6: 31 18 13 56 72 | 74 77 10 23 35 67 36 11")
   (def line [" 41 48 83 86 17 " " 83 86  6 31 17  9 48 53"])
-  (get (apply vector (map calc-matches (cards example)) ) 0)
+  (get (apply vector (map matches (cards example)) ) 0)
   (card (first(str/split-lines example)))
   (map #(str/split % #" +")(map str/trim line))
   (->> line
@@ -105,9 +108,5 @@ Card 6: 31 18 13 56 72 | 74 77 10 23 35 67 36 11")
        (map #(apply hash-set %)))
 
   (result example) ; 13
-
-
-  ;; Testing part 2
   (result-2 example) ; 30
-
   )

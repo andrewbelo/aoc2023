@@ -29,9 +29,12 @@
   "Convert string numbers to int and create additional positions for a number (for each digit)
   First digit is preserved, as id of the number"
   [{pos :pos value :val}]
-  (let [pair-inc #(vector (first pos) (+ % (second pos)))
-        positions (mapv pair-inc (range (count value)))]
-    (into {} (map #(hash-map % [(read-string value) pos]) positions))))
+  (let [move-right  (fn [[x y] i] [x (+ y i)])
+        positions   (for [i (range (count value))
+                          :let [position  (move-right pos i)
+                                num-value (read-string value)]]
+                      {position [num-value pos]})]
+    (into {} positions)))
 
 
 (defn parse-line-indexed
@@ -73,11 +76,7 @@
 
 
 ;; Part 1 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; can do better with *for*
-(def neighbours
-  [[+1 +0] [+1 +1] [+1 -1]
-   [-1 +0] [-1 +1] [-1 -1]
-   [+0 +1] [+0 -1]])
+(def neighbours (for [x [-1 0 1] y [-1 0 1] :when (not= 0 x y)] [x y]))
 
 
 (defn part-numbers-for-symbol
