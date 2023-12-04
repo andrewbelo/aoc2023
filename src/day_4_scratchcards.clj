@@ -44,7 +44,7 @@
 (defn score
   [[wining card]]
   (let [matched (matches [wining card])]
-    (if (= 0 matched) 0 (Math/exp 2 matched))))
+    (if (= 0 matched) 0 (Math/pow 2 matched))))
 
 
 (defn result
