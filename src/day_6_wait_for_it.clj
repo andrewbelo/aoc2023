@@ -35,6 +35,14 @@
 (def range-len (fn [[l r]] (inc (- r l))))
 
 
+;; Version of the function actually used to solve
+;; (defn error-margin
+;;   [[t record]]
+;;   (first (for [tt (range t)
+;;                :let [dist (* tt (- t tt))]
+;;                :when (> dist record)]
+;;            [tt (- t tt)])))
+
 (defn error-margin
   [[t record]]
   (let [d       (Math/sqrt (- (* t t) (* 4 record)))
@@ -83,4 +91,8 @@ Distance:  9  40  200")
   (time (result test-data)) ; (out) "Elapsed time: 0.611728 msecs"
   (result-2 test-data) ; 23501589
   (time (result-2 test-data)) ; (out) "Elapsed time: 0.21825 msecs"
+
+  ;; Old
+  ;; (time (result test-data)) ; (out) "Elapsed time: 1.26423 msecs"
+  ;; (time (result-2 test-data)) ; (out) "Elapsed time: 514.84896 msecs"
   ) ; nil
