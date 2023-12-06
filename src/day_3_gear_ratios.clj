@@ -37,6 +37,7 @@
     (into {} positions)))
 
 
+;; better with group-by
 (defn parse-line-indexed
   "
   Returns a map with the parsed line, grouped by type
