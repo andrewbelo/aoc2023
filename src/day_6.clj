@@ -1,5 +1,6 @@
-(ns day-6-wait-for-it
+(ns day-6
   (:require
+    [clojure.set :as set]
     [clojure.string :as str]))
 
 
@@ -37,12 +38,10 @@
 
 (defn error-margin
   [[t record]]
-  (let [d       (Math/sqrt (- (* t t) (* 4 record)))
-        [x1 x2] [(int (Math/ceil  (/ (- t d) 2)))
-                 (int (Math/floor (/ (+ t d) 2)))]
-        check   #(- (* % (- t %)) record)
-        adjust  (fn [x move] (if-not (zero? (check x)) x (move x)))]
-    (mapv adjust [x1 x2] [inc dec])))
+  (first (for [tt (range t)
+               :let [dist (* tt (- t tt))]
+               :when (> dist record)]
+           [tt (- t tt)])))
 
 
 (defn result
@@ -70,17 +69,16 @@
 "Time:      7  15   30
 Distance:  9  40  200")
 
-  (error-margin [7 9])
-  (map error-margin (apply map vector (race-document example)))
+  (race-document example)
   (race-document-2 example)
 
-  (result example) ; 288
-  (result-2 example) ; 71503
+  (result example)
+  (result-2 example)
 
   (def test-data (slurp (str "resources/day_" day ".txt")))
   (race-document-2 test-data)
   (result test-data) ; 1083852
-  (time (result test-data)) ; (out) "Elapsed time: 0.611728 msecs"
   (result-2 test-data) ; 23501589
-  (time (result-2 test-data)) ; (out) "Elapsed time: 0.21825 msecs"
-  ) ; nil
+  (time (result test-data)) ; (out) "Elapsed time: 1.26423 msecs"
+  (time (result-2 test-data)) ; (out) "Elapsed time: 514.84896 msecs"
+  )
