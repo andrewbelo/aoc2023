@@ -74,11 +74,11 @@ Distance:  9  40  200")
   (map error-margin (apply map vector (race-document example)))
   (race-document-2 example)
 
-  (result example)
-  (result-2 example)
+  (result example) ; 288
+  (result-2 example) ; 71503
 
   (def test-data (slurp (str "resources/day_" day ".txt")))
   (race-document-2 test-data)
-  (result test-data)
-  (result-2 test-data)
-  )
+  (result test-data) ; 1083852
+  (result-2 test-data) ; 23501589
+  ) ; nil
