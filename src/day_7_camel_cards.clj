@@ -3,7 +3,6 @@
     [clojure.string :as str]))
 
 
-;; Part 1 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defn hand-type
   [hand-freqs]
   (let [freqs-len (count hand-freqs)
@@ -16,23 +15,25 @@
       5 :high-card)))
 
 
-(defn hand-type-part-1
-  [hand]
-  (hand-type (frequencies hand)))
+(defn move-joker
+  [hand-freqs]
+  (let [jokers              (hand-freqs "J" 0)
+        without-j           (dissoc hand-freqs "J")
+        [max-val max-freq]  (first (sort-by second > without-j))]
+    (case jokers
+      0 hand-freqs
+      5 {2 5}
+      (assoc without-j max-val (+ max-freq jokers)))))
 
 
 (defn hand
-  [hand-typer line]
+  [task line]
   (let [[cards bid] (str/split line #" ")
-        cards-split  (str/split cards #"")]
+        cards-split (str/split cards #"")
+        freqs       (frequencies cards-split)]
     {:hand cards-split
      :bid (read-string bid)
-     :type (hand-typer cards-split)}))
-
-
-(defn hands
-  [text]
-  (map (partial hand hand-type-part-1) (str/split-lines text)))
+     :type (hand-type (if (= task 1) freqs (move-joker freqs)))}))
 
 
 (defn sort-hands
@@ -45,64 +46,35 @@
 
 (defn add-rank
   [hands]
-  (map (fn [hand rank] (assoc hand :rank (inc rank))) hands (range)))
+  (map (fn [hand rank] (assoc hand :rank (* (:bid hand) (inc rank))))
+       hands (range)))
 
 
-(defn total-rank
-  [hands]
-  (reduce #(+ %1 (* (:bid %2) (:rank %2))) 0 hands))
-
-
-(def cards-order ["A" "K" "Q" "J" "T" "9" "8" "7" "6" "5" "4" "3" "2"])
-
-
-(def types-order
-  [:five-of-a-kind :four-of-a-kind :full-house :three-of-a-kind
-   :two-pair :one-pair :high-card])
+;; RESULTS  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defn calc-result
+  [text task]
+  (let [cards-order   ["A" "K" "Q" "J" "T" "9" "8" "7" "6" "5" "4" "3" "2"]
+        cards-order-2 ["A" "K" "Q" "T" "9" "8" "7" "6" "5" "4" "3" "2" "J"]
+        cards         (case task 1 cards-order cards-order-2)
+        types-order   [:five-of-a-kind :four-of-a-kind :full-house
+                       :three-of-a-kind :two-pair :one-pair :high-card]]
+    (->> text
+         (str/split-lines)
+         (map (partial hand task))
+         (sort-hands cards types-order)
+         (add-rank)
+         (map :rank)
+         (apply +))))
 
 
 (defn result
   [text]
-  (->> text
-       (hands)
-       (sort-hands cards-order types-order)
-       (add-rank)
-       (total-rank)))
-
-
-;; Part 2 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defn move-joker
-  [hand-freqs]
-  (let [jokers    (hand-freqs "J")
-        without-j (dissoc hand-freqs "J")
-        [max-val max-freq]  (first (sort-by second > without-j))]
-    (if (= 5 jokers) {2 5}
-        (assoc without-j max-val (+ max-freq jokers)))))
-
-
-(defn hand-type-part-2
-  [hand]
-  (let [hand-freqs  (frequencies hand)
-        has-joker?  (contains? hand-freqs "J")]
-    (hand-type
-      (if-not has-joker? hand-freqs (move-joker hand-freqs)))))
-
-
-(defn hands-2
-  [text]
-  (map (partial hand hand-type-part-2) (str/split-lines text)))
-
-
-(def cards-order-2 ["A" "K" "Q" "T" "9" "8" "7" "6" "5" "4" "3" "2" "J"])
+  (calc-result text 1))
 
 
 (defn result-2
   [text]
-  (->> text
-       (hands-2)
-       (sort-hands cards-order-2 types-order)
-       (add-rank)
-       (total-rank)))
+  (calc-result text 2))
 
 
 (comment
@@ -116,8 +88,7 @@ KTJJT 220
 QQQJA 483
 ")
 
-  (hand hand-type-part-2  "J2J79 991")
-  (hands example)
+  (hand 2  "J2J79 991")
   (sort-hands cards-order types-order (hands example))
   (result example) ; 6440
   (hands-2 example)
