@@ -37,12 +37,9 @@
 
 (defn sort-hands
   [cards-order types-order hands-vec]
-  (let [enumerate   #(into {} (map vector % (range)))
-        card-values (enumerate cards-order)
-        type-values (enumerate types-order)
-        sorter      (fn [hand]
-                      [(type-values (:type hand))
-                       (mapv #(card-values %) (:hand hand))])]
+  (let [sorter (fn [hand]
+                 [(.indexOf types-order (:type hand))
+                  (mapv #(.indexOf cards-order %) (:hand hand))])]
     (sort-by sorter (comp - compare) hands-vec)))
 
 
@@ -121,8 +118,8 @@ QQQJA 483
 
   (hand hand-type-part-2  "J2J79 991")
   (hands example)
-  (sort-hands cards-order types-order example)
-  (result example)
+  (sort-hands cards-order types-order (hands example))
+  (result example) ; 6440
   (hands-2 example)
   (result-2 example) ; 5905
 
@@ -130,8 +127,10 @@ QQQJA 483
   (def test-data (slurp (str "resources/day_" day ".txt")))
   (hands test-data)
   (result test-data) ; 250898830
-  (result-2 test-data)
+  (result-2 test-data) ; 252127335
 
-  (result test-data) ; 250898830
-  (result-2 test-data)
+  (time (result test-data))
+  ; (out) "Elapsed time: 591.452433 msecs"
+  (time (result-2 test-data))
+  ; (out) "Elapsed time: 504.570163 msecs"
   )
