@@ -83,9 +83,9 @@
 (defn hand-type-part-2
   [hand]
   (let [hand-freqs  (frequencies hand)
-        has-joker?  (contains? hand-freqs "J")
-        new-freqs   (if-not has-joker? hand-freqs (move-joker hand-freqs))]
-    (hand-type new-freqs)))
+        has-joker?  (contains? hand-freqs "J")]
+    (hand-type
+      (if-not has-joker? hand-freqs (move-joker hand-freqs)))))
 
 
 (defn hands-2
