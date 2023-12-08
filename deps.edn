@@ -7,4 +7,5 @@
                 "--middleware" "[cider.nrepl/cider-middleware]"
                 "--interactive"]}
   :repl/dev {:main-opts ["-e" "(require, 'dev)" "-e" "(in-ns, 'dev)" "-r"]}}
- :deps {org.clojure/clojure             {:mvn/version "1.10.1"}}}
+ :deps {org.clojure/clojure             {:mvn/version "1.10.1"}
+        org.clojure/math.numeric-tower {:mvn/version "0.0.5"}}}
