@@ -71,38 +71,65 @@
 
 
 ;; Part 2 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defn match-seed-to-map-2
-  [dst-maps [s len]]
-  (or (first (for [[dst src r] dst-maps
-                   :let [step (- s src)]
-                   :when (<= src s  (+ s len) (+ r src -1))]
-               [(+ dst step) (+ dst step len)]))
-      (first (for [[dst src r] dst-maps
-                   :let [step (- s src)]
-                   :when (<= src s  (+ s len) (+ r src -1))]
-               [(+ dst step) (+ dst step len)]))
-      [s len]))
+
+(defn step
+  [[s r] xmaps]
+  (println s r xmaps)
+  (or
+    ;; full in
+    (first (for [[d' s' r'] xmaps
+                 :when (<= s' s (+ s r -1) (+ s' r' -1))
+                 :let [_ (println s r "full in " d' s' r')]]
+             [[(+ d' (- s s'))  r]]))
+
+    ;; first half in
+    (first (for [[d' s' r'] xmaps
+                 :when (and  (<= s' s (+ s' r') (+ s r -1))
+                             (not= s (+ s' r'))
+                             (not= s (+ s' r')))
+                 :let [part-in (- (+ s' r') s)
+                       _ (println s r "right in " d' s' r' "(" d' (- s s') ")")]]
+             (into
+               [[(+ d' (- s s')) part-in]]
+               (step [(+ s part-in) (- r part-in)] xmaps))))
+
+    ;; second half in
+    (first (for [[d' s' r'] xmaps
+                 :when (and  (<= s s' (+ s r -1) (+ s' r' -1))
+                             (not= s' (+ s r)))
+                 :let [part-in (- (+ s r) s')
+                       _ (println "left")]]
+             (into
+               [[d' part-in]]
+               (step [s (- s' s)] xmaps))))
+
+    ;; no in
+    [[s r]]))
 
 
-(defn apply-map-2
-  [seeds-ranges dst-maps]
-  (mapcat #(match-seed-to-map-2 dst-maps %) seeds-ranges))
+(defn full-translation
+  [seeds xmaps-list]
+  (reduce (fn [seeds-ranges xmaps] (mapcat #(step % xmaps) seeds-ranges))
+          [seeds]
+          xmaps-list))
 
 
-(defn read-almanac-2
-  [[seeds-ranges levels]]
-  (reduce #(apply-map-2 %1 %2) seeds-ranges levels))
+(defn all-full-translation
+  [[seeds-list xmaps-list]]
+  (->>
+    (mapcat #(full-translation % xmaps-list) seeds-list)
+    (sort-by first)
+    (first)))
 
 
 (defn result-2
   [text]
   (->> text
        (almanac-2)
-       (read-almanac-2)
-       (apply min)))
+       (all-full-translation)))
 
 
-(map #(+ 4 %) #{1 5 13 3 25})
+(reduce)
 
 
 (comment
@@ -118,11 +145,24 @@
   (read-almanac (almanac example))
 
 
-  (almanac-2 example)
+  (def input (almanac-2 example))
+  (def seeds-ranges (first input))
+  (def xmaps-list (second input))
+
+
+  (step [60 10] [[90 50 40]])
+  (step [85 10] [[190 50 40] [10 93 20]])
+
+  (reduce step [])
+  (full-translation [79 14] xmaps-list)
+  (all-full-translation [ [[79 14] [55 12]] xmaps-list])
+  (result-2 example)
+
   (result example)
   (result-2 example)
 
   (def test-data (slurp (str "resources/day_" day ".txt")))
   (result test-data)
-  (result-2 test-data)
+  (result-2 test-data) ; [77435348 18026321]
+  (time (result-2 test-data))
   )

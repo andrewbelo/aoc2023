@@ -1,4 +1,4 @@
-(ns day-1-trebuchet
+(ns aoc.2023.day-1-trebuchet
   (:require
     [clojure.string :as str]))
 
