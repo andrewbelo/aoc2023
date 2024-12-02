@@ -2,3 +2,6 @@
 .cpcache
 .lsp
 .nrepl-port
+resources/
+*cookies*
+log*
