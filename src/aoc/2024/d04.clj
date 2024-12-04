@@ -1,6 +1,5 @@
 (ns aoc.2024.d04
   (:require
-    [clojure.set :as set]
     [clojure.string :as str]))
 
 
@@ -8,580 +7,62 @@
 (def test-txt (slurp (str "resources/2024/" day)))
 (def example-txt (slurp (str "resources/2024/" day "e")))
 
+(def dirs [[0 1] [1 1] [1 0] [1 -1]])
+(def edges [[-1 -1] [1 1] [-1 1] [1 -1]])
+
 
 (defn txt->
   [txt]
   (mapv #(str/split % #"") (str/split-lines txt)))
 
 
-(def dirs [[0 1] [1 1] [1 0] [1 -1]])
+(defn move-vec-by
+  [a dir i]
+  (mapv #(+ %1 (* i %2)) a dir))
 
 
-(defn xmas-start
+(defn xmas-starts
   [txt row col]
   (concat
     (for [dir dirs
-          :let [coords (mapv (fn [i] (mapv #(+ %1 (* i %2)) [row col] dir))
-                             (range 4))
-                ccs   (filter (fn [[a b]]
-                                (and (<= 0 a (dec (count txt)))
-                                     (<= 0 b (dec (count txt))))) coords)
-                values (mapv (fn [[a b]] ((txt a) b)) ccs)
-                conc (str/join values)]
-          :when (#{"XMAS" "SAMX"} conc)]
-      conc)))
+          :let [coords (mapv #(move-vec-by [row col] dir %) (range 4))
+                line (str/join (mapv #(get-in txt % \space) coords))]
+          :when (#{"XMAS" "SAMX"} line)]
+      line)))
 
 
 (defn x-mas-start?
   [txt row col]
-  (when (= ((txt row) col) "A")
-    (let [edges (into [] (for [i (range 4)
-                               :let [diffs [[-1 -1] [1 1] [-1 1] [1 -1]]
-                                     [r' c'] (mapv + [row col] (diffs i))]
-                               :when (and
-                                       (<= 0 r' (dec (count txt)))
-                                       (<= 0 c' (dec (count txt))))]
-                           ((txt r') c')))]
-      (and (= 4 (count edges))
-           (#{"MS" "SM"} (str/join (subvec edges 0 2)))
-           (#{"MS" "SM"} (str/join (subvec edges 2 4)))))))
-
-
-([1 2 3] 2)
+  (when (= (get-in txt [row col]) "A")
+    (let [[a b c d] (for [edge edges
+                          :let [pos' (mapv + [row col] edge)]]
+                      (get-in txt pos' \space))
+          diagonals (map str/join [[a b] [c d]])]
+      (every? some? (map #{"MS" "SM"} diagonals)))))
 
 
 (defn sol-1
   [input]
-  (let [txt (txt-> input)]
-    (apply concat (for [r (range (count txt))
-                        c (range (count (first txt)))
-                        :let [starts (xmas-start txt r c)]
-                        :when (seq starts)]
-                    starts))))
+  (let [txt (txt-> input)
+        starts (for [r (range (count txt))
+                     c (range (count (first txt)))]
+                 (xmas-starts txt r c))]
+    (count (apply concat starts))))
 
 
 (defn sol-2
   [input]
-  (let [txt (txt-> input)]
-    (for [r (range (count txt))
-          c (range (count (first txt)))]
-      (x-mas-start? txt r c))))
-
-
-(count (filter (not= false)) (filter some? (sol-2 test-txt))) ; 2064
-;; ()
-;; 0
-(count (filter true? (sol-2 example-txt)))
-(def f (txt-> example-txt))
-(x-mas-start? f 1 2)
-(xmas-start f  0 4)
-(xmas-start f  0 5)
+  (let [txt     (txt-> input)
+        starts  (for [r (range (count txt))
+                      c (range (count (first txt)))]
+                  (x-mas-start? txt r c))]
+    (count (filter true? starts))))
 
 
 (comment
-  (time (sol-1 test-txt))
+  ; (out) "Elapsed time: 333.561394 msecs"
+  (time (sol-1 test-txt)) ; 2583
 
-  (time (sol-2 test-txt))
-; (nil
-;  nil
-;  nil
-;  nil
-;  false
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  false
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  false
-;  nil
-;  nil
-;  nil
-;  nil
-;  false
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  false
-;  nil
-;  false
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  false
-;  nil
-;  false
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  false
-;  false
-;  nil
-;  false
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  false
-;  nil
-;  nil
-;  nil
-;  false
-;  nil
-;  false
-;  nil
-;  nil
-;  false
-;  nil
-;  nil
-;  false
-;  nil
-;  nil
-;  false
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  false
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  false
-;  nil
-;  nil
-;  nil
-;  false
-;  nil
-;  nil
-;  nil
-;  false
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  false
-;  nil
-;  false
-;  nil
-;  nil
-;  nil
-;  false
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  "MS"
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  "SM"
-;  nil
-;  "MS"
-;  nil
-;  nil
-;  "MS"
-;  nil
-;  "MS"
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  "MS"
-;  "MS"
-;  nil
-;  "SM"
-;  nil
-;  nil
-;  nil
-;  "MS"
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  "SM"
-;  nil
-;  nil
-;  nil
-;  nil
-;  "MS"
-;  nil
-;  nil
-;  nil
-;  "MS"
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  "SM"
-;  nil
-;  "MS"
-;  nil
-;  nil
-;  nil
-;  "MS"
-;  nil
-;  nil
-;  nil
-;  "SM"
-;  nil
-;  "SM"
-;  nil
-;  nil
-;  nil
-;  "SM"
-;  nil
-;  "SM"
-;  nil
-;  "SM"
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  "SM"
-;  nil
-;  "SM"
-;  nil
-;  nil
-;  "SM"
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  "MS"
-;  "SM"
-;  nil
-;  "SM"
-;  nil
-;  "SM"
-;  nil
-;  "SM"
-;  nil
-;  nil
-;  nil
-;  nil
-;  "SM"
-;  nil
-;  "SM"
-;  nil
-;  "SM"
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  "SM"
-;  nil
-;  "SM"
-;  nil
-;  nil
-;  nil
-;  nil
-;  "SM"
-;  nil
-;  "SM"
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  "MS"
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  "MS"
-;  nil
-;  nil
-;  nil
-;  "SM"
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  "SM"
-;  nil
-;  nil
-;  nil
-;  "MS"
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  "SM"
-;  nil
-;  "SM"
-;  nil
-;  "SM"
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  "SM"
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  "SM"
-;  nil
-;  "SM"
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  "SM"
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  nil
-;  ...)
-
+  ; (out) "Elapsed time: 34.816937 msecs"
+  (time (sol-2 test-txt)) ; 1978
   )
