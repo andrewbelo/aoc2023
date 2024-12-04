@@ -23,12 +23,14 @@
 
 (defn xmas-starts
   [txt row col]
-  (concat
-    (for [dir dirs
-          :let [coords (mapv #(move-vec-by [row col] dir %) (range 4))
-                line (str/join (mapv #(get-in txt % \space) coords))]
-          :when (#{"XMAS" "SAMX"} line)]
-      line)))
+  (if (nil? (#{"X" "S"} (get-in txt [row col] \space)))
+    '()
+    (concat
+      (for [dir dirs
+            :let [coords (mapv #(move-vec-by [row col] dir %) (range 4))
+                  line (str/join (mapv #(get-in txt % \space) coords))]
+            :when (#{"XMAS" "SAMX"} line)]
+        line))))
 
 
 (defn x-mas-start?
@@ -60,7 +62,11 @@
 
 
 (comment
+  (def ex (txt-> example-txt))
+  (xmas-starts ex 0 1)
+
   ; (out) "Elapsed time: 333.561394 msecs"
+  ; (out) "Elapsed time: 138.758496 msecs"
   (time (sol-1 test-txt)) ; 2583
 
   ; (out) "Elapsed time: 34.816937 msecs"
