@@ -6,7 +6,6 @@
 (def day 4)
 (def test-txt (slurp (str "resources/2024/" day)))
 (def example-txt (slurp (str "resources/2024/" day "e")))
-
 (def dirs [[0 1] [1 1] [1 0] [1 -1]])
 (def edges [[-1 -1] [1 1] [-1 1] [1 -1]])
 

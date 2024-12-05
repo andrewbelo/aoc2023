@@ -2,7 +2,7 @@
 day_of_month=${2:-${AOC_DAY:-$(date +%-d)}}
 year=${1:-${AOC_YEAR:-$(date +%Y)}}
 cookies=${AOC_COOKIES:-"/home/a.belo/personal/clojure/aoc-2023/aoc_cookies.txt"}
-directory="resources/$year"
+directory="/home/a.belo/personal/clojure/aoc-2023/resources/$year"
 filepath="$directory/$day_of_month"
 aoc_url="https://adventofcode.com/$year/day/$day_of_month/input"
 max_attempts=5
@@ -12,7 +12,7 @@ mkdir -p $directory
 while (( attempt <= max_attempts )); do
   response_code=$(curl -s -w "%{http_code}" -b $cookies -o $filepath $aoc_url)
   if [[ $response_code -eq 200 ]]; then
-    echo "Successfully downloaded today's input file"
+    echo "Successfully downloaded input for $year-$day file to $directory "
     exit 0
   fi
   echo "Curl request failed with response code: $response_code"
